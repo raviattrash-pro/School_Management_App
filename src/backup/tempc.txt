@@ -1,0 +1,210 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Table, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import LoginForm from './LoginForm';
+
+function StudentList() {
+  const [students, setStudents] = useState([]);
+  const [error, setError] = useState(null);
+  const [credentials, setCredentials] = useState(null);
+const [searchQuery, setSearchQuery] = useState("");
+
+  
+  
+
+  useEffect(() => {
+    const stored = localStorage.getItem('credentials');
+    if (stored) setCredentials(JSON.parse(stored));
+  }, []);
+
+  useEffect(() => {
+    if (!credentials) return;
+    axios
+      .get('/api/students', {
+        auth: { username: credentials.username, password: credentials.password }
+      })
+      .then(response => {
+        setStudents(response.data);
+        setError(null);
+      })
+      .catch(error => {
+        setError(error.message || 'Failed to fetch students');
+        console.error(
+          'API Error:',
+          error.response ? error.response.status : error.message
+        );
+      });
+  }, [credentials]);
+
+  const handleLogin = (username, password) => {
+    setCredentials({ username, password });
+    localStorage.setItem(
+      'credentials',
+      JSON.stringify({ username, password })
+    );
+    setError(null);
+  };
+
+  const handleLogout = () => {
+    setCredentials(null);
+    localStorage.removeItem('credentials');
+  };
+
+
+  const fetchStudents = async () => {
+    try {
+      const stored = localStorage.getItem("credentials");
+      const creds = stored ? JSON.parse(stored) : null;
+      if (!creds) return;
+
+      const response = await axios.get("http://localhost:8080/api/students", {
+        auth: { username: creds.username, password: creds.password },
+      });
+      setStudents(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setError(err.message || "Failed to fetch students");
+    }
+  };
+
+
+const handleDelete = async (id) => {
+  try {
+    const stored = localStorage.getItem("credentials");
+    const creds = stored ? JSON.parse(stored) : null;
+
+    await axios.delete(`http://localhost:8080/api/students/${id}`, {
+      auth: {
+        username: creds.username,
+        password: creds.password,
+      },
+    });
+
+    // Option 1: Refresh from backend
+    fetchStudents();
+
+    // Option 2 (faster): Update UI directly
+    // setStudents((prev) => prev.filter((s) => s.id !== id));
+
+  } catch (error) {
+    console.error("Error deleting student:", error);
+  }
+};
+
+  if (!credentials) {
+    return <LoginForm onLogin={handleLogin} />;
+  }
+
+  if (error) {
+    return (
+      <div className="error-box">
+        <h4>⚠️ Error</h4>
+        <p>{error}</p>
+        <button onClick={() => setCredentials(null)} className="retry-btn">
+          Try Logging in Again
+        </button>
+      </div>
+    );
+  }
+
+
+   const filteredStudents = students.filter(
+    (s) =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.rollNumber?.toString().includes(searchQuery) ||
+      s.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    
+
+    <div className="student-list-container">
+      <div className="student-list-header">
+        <h2>📚 Student Management</h2>
+        <div className="header-actions">
+          
+          <Link to="/add-student">
+            <Button className="btn-glass add-btn">+ Add Student</Button>
+          </Link>
+          <Button className="btn-glass logout-btn" onClick={handleLogout}>
+            Logout
+          </Button>
+           <input
+        type="text"
+        placeholder="Search by name, roll no, or email..."
+        className="search-input"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+          
+         
+
+        </div>
+      </div>
+
+      {students.length === 0 ? (
+        <div className="empty-state">
+          <p>No students found 👀</p>
+          <Link to="/add-student">
+            <Button className="btn-glass">Add Your First Student</Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="table-wrapper">
+          <Table responsive className="student-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Roll Number</th>
+                <th>DOB</th>
+                <th>Address</th>
+                <th>Gender</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map(student => (
+                <tr key={student.id}>
+                  <td>{student.id}</td>
+                  <td>{student.name}</td>
+                  <td>{student.rollNumber}</td>
+                  <td>{student.dateOfBirth}</td>
+                  <td>{student.address}</td>
+                  <td>{student.gender}</td>
+                  <td>{student.phone}</td>
+                  <td>{student.email}</td>
+                  <td>
+                    <Link to={`/edit-student/${student.id}`}>
+                      <Button
+                        variant="warning"
+                        size="sm"
+                        className="action-btn edit-btn"
+                      >
+                        ✏️ Edit
+                      </Button>
+                    </Link>{' '}
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="action-btn delete-btn"
+                      onClick={() => handleDelete(student.id)}
+                    >
+                      🗑️ Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default StudentList; 
