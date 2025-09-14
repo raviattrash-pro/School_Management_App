@@ -190,6 +190,7 @@ const handleDelete = async (id) => {
 
         <td>{student.phone}</td>
         <td>{student.email}</td>
+        
         <td className='action-buttons'>
           <Link to={`/edit-student/${student.id}`}>
             <Button
