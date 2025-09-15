@@ -201,6 +201,13 @@ const { id } = useParams();
               <Form.Control type="number" name="balance" value={student.balance} onChange={handleChange} required />
             </Form.Group>
 
+             <Form.Group className="mb-3">
+              <Form.Label>image Urls  </Form.Label>
+              <Form.Control as="textarea" rows={2} name="imageUrl" value={student.imageUrl} onChange={handleChange} />
+            </Form.Group>
+``
+            
+
               <Form.Select name="sponsorshipType" value={student.sponsorshipType} onChange={handleChange}>
                 <option value="">Select SponsorshipType</option>
                 <option value="Central Government Scheme">Central Government Scheme</option>

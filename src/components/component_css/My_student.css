@@ -1,0 +1,85 @@
+/* 🔹 Search + Logout container */
+.header-right {
+  position: sticky;   /* sticks inside its parent */
+  top: 0;             /* stick to the very top */
+  z-index: 1000;      /* stay above cards */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(238, 236, 236, 0.9); /* glass-like background */
+  backdrop-filter: blur(8px);           /* optional blur effect */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+}
+
+/* Fixed header bar */
+
+
+/* Scrollable container for student cards */
+.scrollable-cards {
+  margin: auto;   /* space below fixed header */
+  max-height: calc(100vh - 80px); /* viewport height minus header */
+  overflow-y: auto;   /* vertical scroll */
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+    justify-content: center; /* center cards */
+}
+
+/* Student card wrapper */
+.id-card-wrapper {
+  flex: 1 1 calc(25% - 20px); /* 4 cards per row (responsive) */
+  min-width: 220px;
+  max-width: 280px;
+ /* background: #ffffff;*/
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+  cursor: pointer;
+  border: 1px solid #e6e3e3;
+  margin: auto;
+}
+
+.id-card-wrapper:hover {
+  transform: translateY(-4px);
+}
+
+
+/* 🔹 Search input */
+.search-input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  min-width: 220px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+}
+
+/* 🔹 Logout button */
+.logout-btn {
+  background: #e63946 !important;
+  border: none !important;
+  color: #fff;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: background 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #d62828 !important;
+}
+.card-actions{
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}

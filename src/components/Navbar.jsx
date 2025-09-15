@@ -26,6 +26,7 @@ function Navbar() {
           <Nav.Link as={Link} to="/financial">Financial 💳</Nav.Link>
           <Nav.Link as={Link} to="/parent-portal">Parent Portal 👨‍👦</Nav.Link>
           <Nav.Link as={Link} to="/admin">Admin 👨‍✈️</Nav.Link>
+          <Nav.Link as={Link} to="/my-students">My Students 👩‍🎓</Nav.Link>
         </Nav>
       </BootstrapNavbar.Collapse>
     </BootstrapNavbar>

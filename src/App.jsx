@@ -8,6 +8,7 @@ import Grades from './components/Grades';
 import Financial from './components/Financial';
 import ParentPortal from './components/ParentPortal';
 import Admin from './components/Admin';
+import My_student from './components/My_student';
 import './App.css'; // Make sure file name case matches (App.css not app.css)
 
 function AppContent() {
@@ -40,6 +41,7 @@ function AppContent() {
           <Route path="/financial" element={<Financial />} />
           <Route path="/parent-portal" element={<ParentPortal />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/my-students" element={<My_student />} />
         </Routes>
       </div>
     </div>

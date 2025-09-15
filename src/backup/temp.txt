@@ -1,57 +1,231 @@
-  <Form.Group className="mb-3">
-              <Form.Label>PreviousRecords  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="previousRecords" value={student.previousRecords} onChange={handleChange} />
-            </Form.Group>
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Table, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import LoginForm from './LoginForm';
+import './component_css/StudentList.css';
+function StudentList() {
+  const [students, setStudents] = useState([]);
+  const [error, setError] = useState(null);
+  const [credentials, setCredentials] = useState(null);
+const [searchQuery, setSearchQuery] = useState("");
 
-             <Form.Group className="mb-3">
-              <Form.Label>PreviousGrades  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="previousGrades" value={student.previousGrades} onChange={handleChange} />
-            </Form.Group>
+  
+  
 
-             <Form.Group className="mb-3">
-              <Form.Label>MedicalHistory  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="medicalHistory" value={student.medicalHistory} onChange={handleChange} />
-            </Form.Group>
+  useEffect(() => {
+    const stored = localStorage.getItem('credentials');
+    if (stored) setCredentials(JSON.parse(stored));
+  }, []);
 
-            <Form.Group className="mb-3">
-              <Form.Label>Allergies  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="allergies" value={student.allergies} onChange={handleChange} />
-            </Form.Group>
+  useEffect(() => {
+    if (!credentials) return;
+    axios
+      .get('/api/students', {
+        auth: { username: credentials.username, password: credentials.password }
+      })
+      .then(response => {
+        setStudents(response.data);
+        setError(null);
+      })
+      .catch(error => {
+        setError(error.message || 'Failed to fetch students');
+        console.error(
+          'API Error:',
+          error.response ? error.response.status : error.message
+        );
+      });
+  }, [credentials]);
+
+  const handleLogin = (username, password) => {
+    setCredentials({ username, password });
+    localStorage.setItem(
+      'credentials',
+      JSON.stringify({ username, password })
+    );
+    setError(null);
+  };
+
+  const handleLogout = () => {
+    setCredentials(null);
+    localStorage.removeItem('credentials');
+  };
 
 
-            <Form.Group className="mb-3">
-              <Form.Label>Activities  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="activities" value={student.activities} onChange={handleChange} />
-            </Form.Group>
+  const fetchStudents = async () => {
+    try {
+      const stored = localStorage.getItem("credentials");
+      const creds = stored ? JSON.parse(stored) : null;
+      if (!creds) return;
 
-             <Form.Group className="mb-3">
-              <Form.Label>Courses  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="courses" value={student.courses} onChange={handleChange} />
-            </Form.Group>
+      const response = await axios.get("http://localhost:8080/api/students", {
+        auth: { username: creds.username, password: creds.password },
+      });
+      setStudents(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setError(err.message || "Failed to fetch students");
+    }
+  };
 
-             <Form.Group className="mb-3">
-              <Form.Label>Attendance Records  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="attendanceRecords" value={student.attendanceRecords} onChange={handleChange} />
-            </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Grades Records  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="grades" value={student.grades} onChange={handleChange} />
-            </Form.Group>
+const handleDelete = async (id) => {
+  try {
+    const stored = localStorage.getItem("credentials");
+    const creds = stored ? JSON.parse(stored) : null;
 
-            <Form.Group className="mb-3">
-              <Form.Label>Timetable  </Form.Label>
-              <Form.Control as="textarea" rows={2} name="timetable" value={student.timetable} onChange={handleChange} />
-            </Form.Group>
+    await axios.delete(`http://localhost:8080/api/students/${id}`, {
+      auth: {
+        username: creds.username,
+        password: creds.password,
+      },
+    });
 
-             <Form.Group className="mb-3">
-              <Form.Label>Balance</Form.Label>
-              <Form.Control type="text" name="balance" value={student.balance} onChange={handleChange} required />
-            </Form.Group>
+    // Option 1: Refresh from backend
+    fetchStudents();
 
-             <Form.Select name="sponsorshipType" value={student.sponsorshipType} onChange={handleChange}>
-                <option value="">Select SponsorshipType</option>
-                <option value="Male">Central Government Scheme</option>
-                <option value="Female">State Government Scheme</option>
-                <option value="Other">Other</option>
-              </Form.Select>
+    // Option 2 (faster): Update UI directly
+    // setStudents((prev) => prev.filter((s) => s.id !== id));
+
+  } catch (error) {
+    console.error("Error deleting student:", error);
+  }
+};
+
+  if (!credentials) {
+    return <LoginForm onLogin={handleLogin} />;
+  }
+
+  if (error) {
+    return (
+      <div className="error-box">
+        <h4>⚠️ Error</h4>
+        <p>{error}</p>
+        <button onClick={() => setCredentials(null)} className="retry-btn">
+          Try Logging in Again
+        </button>
+      </div>
+    );
+  }
+
+
+   const filteredStudents = students.filter(
+    (s) =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.rollNumber?.toString().includes(searchQuery) ||
+      s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.phone?.toString().includes(searchQuery) ||
+      s.id?.toString().includes(searchQuery) ||
+      s.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.gender?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.dateOfBirth?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    
+
+    <div className="student-list-container">
+      <div className="student-list-header">
+        <h2>📚 Student Management</h2>
+            <div className="header-left">
+              <Link to="/add-student">
+                <Button className="btn-glass add-btn">+ Add Student 👩‍🎓👨‍🎓</Button>
+              </Link>
+            </div>
+
+      <div className="header-right">
+          <input
+               type="text"
+              placeholder="Search 🕵️‍♀️❓🔍"
+              className="search-input"
+              value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button className="btn-glass logout-btn" onClick={handleLogout}>
+                Logout 🏃🚪
+          </Button>
+      </div>
+
+        
+    </div>
+
+      {students.length === 0 ? (
+        <div className="empty-state">
+          <p>No students found 👀</p>
+          <Link to="/add-student">
+            <Button className="btn-glass">Add Your First Student</Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="table-wrapper">
+          <Table responsive className="student-table">
+            <thead className='header-row'>
+              <tr >
+                <th>ID</th>
+                <th>Name 👨‍🎓 </th>
+                <th>Roll Number</th>
+                <th>DOB 🎂 </th>
+                <th>Address 🗺️ </th>
+                <th>Gender ♂️♀️ </th>
+                <th>Phone 📱 </th>
+                <th>Email 📧 </th>
+                <th>Actions 🎬 </th>
+              </tr>
+            </thead>
+            <tbody>
+  {filteredStudents.length > 0 ? (
+    filteredStudents.map((student) => (
+      <tr key={student.id}>
+        <td>{student.id}</td>
+        <td>{student.name}</td>
+        <td>{student.rollNumber}</td>
+       <td>{student.dateOfBirth?.split("T")[0]}</td>
+        <td>{student.address}</td>
+       <td>
+  <span className={`gender ${student.gender?.toLowerCase() || "na"}`}>
+    {student.gender || "N/A"}
+  </span>
+</td>
+
+        <td>{student.phone}</td>
+        <td>{student.email}</td>
+        
+        <td className='action-buttons'>
+          <Link to={`/edit-student/${student.id}`}>
+            <Button
+              variant="warning"
+              size="sm"
+              className="action-btn edit-btn"
+            >
+              ✏️ Edit
+            </Button>
+          </Link>{" "}
+          <Button
+            variant="danger"
+            size="sm"
+            className="action-btn delete-btn"
+            onClick={() => handleDelete(student.id)}
+          >
+            🗑️ Delete
+          </Button>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="9" style={{ textAlign: "center", padding: "20px" }}>
+        ❌ No students found
+      </td>
+    </tr>
+  )}
+</tbody>
+
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default StudentList;
